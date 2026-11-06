@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8">\n  <meta name="audio-build" content="mp3-fix-v2">
   <meta name="description" content="資訊英文第1至3課，18組搭配詞互動測驗，點喇叭播放 Google 美式英文 MP3。">
   <meta property="og:title" content="資訊英文1–3搭配詞點擊測驗">
   <meta property="og:description" content="18組搭配詞互動練習，搭配美式英文 MP3 發音。">
@@ -190,6 +190,7 @@
   </main>
 
   <p id="audio-status" role="status" aria-live="polite" class="text-xs text-slate-400 text-center my-3">點 🔊 播放 Google 美式英文 MP3</p>
+  <audio id="voice-player" preload="auto" playsinline controls class="w-full max-w-2xl my-2" aria-label="英文 MP3 播放器"></audio>
   <!-- 底部導覽列 -->
   <footer id="quiz-footer" class="w-full max-w-2xl flex items-center justify-between gap-3 z-10">
     <button onclick="prevQuestion()" class="px-4 py-3.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold transition flex items-center space-x-2">
@@ -798,8 +799,8 @@
     }
 
     // 固定的同站 MP3；直接在使用者點擊事件中呼叫 play()。
-    const voicePlayer = new Audio();
-    voicePlayer.preload = 'none';
+    const voicePlayer = document.getElementById('voice-player');
+    voicePlayer.preload = 'auto';
     voicePlayer.setAttribute('playsinline', '');
     const audioFiles = new Map();
     collocationQuestions.forEach((q, i) => {
@@ -810,19 +811,28 @@
     });
     function stopVoice() {
       voicePlayer.pause();
-      voicePlayer.currentTime = 0;
+      // iOS may reject seeking before metadata is loaded.
+      if (voicePlayer.readyState > 0) {
+        try { voicePlayer.currentTime = 0; } catch (_) {}
+      }
     }
     function speakText(text) {
       const src = audioFiles.get(text);
       if (!src) return;
       stopVoice();
       document.getElementById('audio-status').textContent = '正在載入美式英文錄音…';
-      voicePlayer.src = src;
+      voicePlayer.muted = false;
+      voicePlayer.volume = 1;
+      voicePlayer.src = new URL(src, document.baseURI).href;
+      voicePlayer.load();
       const playback = voicePlayer.play();
       if (playback) playback.catch(() => {
-        document.getElementById('audio-status').textContent = '錄音暫時無法播放，請再點一次 🔊；也可用 Safari 或 Chrome 開啟。';
+        document.getElementById('audio-status').textContent = '請點下方播放器的 ▶ 播放；若仍無聲，請確認手機媒體音量。';
       });
     }
+    voicePlayer.addEventListener('error', () => {
+      document.getElementById('audio-status').textContent = 'MP3 載入失敗，請重新整理頁面後再點 🔊。';
+    });
     voicePlayer.addEventListener('playing', () => {
       document.getElementById('audio-status').textContent = '🔊 正在播放美式英文錄音';
     });

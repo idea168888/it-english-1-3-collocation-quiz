@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8">\n  <meta name="audio-build" content="mp3-fix-v2">
+  <meta name="description" content="資訊英文第1至3課，18組搭配詞互動測驗，點喇叭播放 Google 美式英文 MP3。">
+  <meta property="og:title" content="資訊英文1–3搭配詞點擊測驗">
+  <meta property="og:description" content="18組搭配詞互動練習，搭配美式英文 MP3 發音。">
+  <meta property="og:type" content="website">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI資訊搭配詞點擊測驗</title>
+  <title>資訊英文1–3搭配詞點擊測驗</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -62,7 +66,7 @@
       <span>AI & Information Collocation Quiz</span>
     </div>
     <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-cyan-300">
-      AI資訊搭配詞點擊測驗
+      資訊英文1–3搭配詞點擊測驗
     </h1>
 
     <!-- 狀態資訊列 -->
@@ -106,7 +110,7 @@
         </span>
         <button onclick="speakVerb()" class="px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-indigo-300 transition flex items-center space-x-1.5" title="聽取動詞發音">
           <i class="fa-solid fa-volume-high"></i>
-          <span>動詞發音</span>
+          <span>🔊 動詞發音</span>
         </button>
       </div>
 
@@ -135,7 +139,7 @@
           <span><i class="fa-solid fa-quote-left text-indigo-400 mr-1.5"></i>課本原句搭配情境：</span>
           <button onclick="speakSentence()" class="text-indigo-400 hover:text-indigo-200 transition flex items-center space-x-1">
             <i class="fa-solid fa-play text-[10px]"></i>
-            <span>朗讀整句</span>
+            <span>🔊 朗讀整句</span>
           </button>
         </div>
         <p id="sentence-prompt" class="text-sm sm:text-base text-slate-100 font-medium leading-relaxed">
@@ -185,6 +189,8 @@
     </button>
   </main>
 
+  <p id="audio-status" role="status" aria-live="polite" class="text-xs text-slate-400 text-center my-3">點 🔊 播放 Google 美式英文 MP3</p>
+  <audio id="voice-player" preload="auto" playsinline controls class="w-full max-w-2xl my-2" aria-label="英文 MP3 播放器"></audio>
   <!-- 底部導覽列 -->
   <footer id="quiz-footer" class="w-full max-w-2xl flex items-center justify-between gap-3 z-10">
     <button onclick="prevQuestion()" class="px-4 py-3.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold transition flex items-center space-x-2">
@@ -315,7 +321,7 @@
         verbDisplay: "represent",
         phonetic: "/ˌreprɪˈzent/",
         verbZh: "代表；象徵",
-        correctNoun: "unity and strength",
+        correctNoun: "unity, strength",
         correctNounZh: "團結與力量（或 electrical power）",
         distractors: [
           { en: "a cheap hard drive", zh: "便宜的硬碟" },
@@ -348,7 +354,7 @@
       {
         unit: "Unit 1 · 電路基礎",
         verb: "ensure",
-        verbDisplay: "ensure",
+        verbDisplay: "ensuring",
         phonetic: "/ɪnˈʃʊr/",
         verbZh: "確保；保證",
         correctNoun: "efficiency and reliability",
@@ -358,7 +364,7 @@
           { en: "plastic waste", zh: "塑膠廢棄物" },
           { en: "artificial flowers", zh: "人造花" }
         ],
-        sentenceBefore: "Additional components help complete the design of the power delivery system, ensuring",
+        sentenceBefore: "Additional components help complete the design of the power delivery system,",
         sentenceAfter: ".",
         fullSentence: "Additional components help complete the design of the power delivery system, ensuring efficiency and reliability.",
         explanation: "【課本搭配】ensure efficiency and reliability（確保效率與可靠性），習題中亦有 ensure everything was working properly（確保一切運作正常）。"
@@ -495,7 +501,7 @@
         verbDisplay: "boosted",
         phonetic: "/buːst/",
         verbZh: "促進；增加；提升",
-        correctNoun: "the performance of devices",
+        correctNoun: "the performance of electronic devices",
         correctNounZh: "電子設備的效能",
         distractors: [
           { en: "the size of devices", zh: "設備的體積" },
@@ -531,7 +537,7 @@
         verbDisplay: "link",
         phonetic: "/lɪŋk/",
         verbZh: "連結；聯繫",
-        correctNoun: "different parts of a circuit",
+        correctNoun: "the different parts of this circuit",
         correctNounZh: "電路的不同部分",
         distractors: [
           { en: "agricultural waste", zh: "農業廢棄物" },
@@ -555,8 +561,15 @@
     let quizOrder = collocationQuestions.map((_, i) => i);
 
     // 音效合成器 (Web Audio API，無須外部音檔)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx;
+    function getAudioContext() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+      return audioCtx || (audioCtx = new AudioContextClass());
+    }
     function playSound(isCorrect) {
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -594,6 +607,7 @@
     }
 
     function renderQuestion() {
+      stopVoice();
       const q = collocationQuestions[quizOrder[currentIdx]];
       attemptedThisQuestion = false;
       questionSolved = false;
@@ -704,6 +718,8 @@
           </div>
         `;
 
+        feedbackBox.insertAdjacentHTML('beforeend', `<button type="button" onclick="speakPhrase()" class="mt-3 px-4 py-2 rounded-xl bg-emerald-800 text-white">🔊 重聽搭配詞</button>`);
+
         // 自動朗讀正確搭配詞
         speakText(`${q.verb} ${q.correctNoun}`, 0.92);
 
@@ -754,6 +770,7 @@
     }
 
     function showResultScreen() {
+      stopVoice();
       document.getElementById('quiz-container').classList.add('hidden');
       document.getElementById('quiz-footer').classList.add('hidden');
       const resultScreen = document.getElementById('result-screen');
@@ -781,13 +798,51 @@
       renderQuestion();
     }
 
-    function speakText(text, rate = 0.9) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      utterance.rate = rate;
-      window.speechSynthesis.speak(utterance);
+    // 固定的同站 MP3；直接在使用者點擊事件中呼叫 play()。
+    const voicePlayer = document.getElementById('voice-player');
+    voicePlayer.preload = 'auto';
+    voicePlayer.setAttribute('playsinline', '');
+    const audioFiles = new Map();
+    collocationQuestions.forEach((q, i) => {
+      const prefix = `audio/${String(i + 1).padStart(2, '0')}`;
+      audioFiles.set(q.verb, `${prefix}-verb.mp3`);
+      audioFiles.set(`${q.verb} ${q.correctNoun}`, `${prefix}-phrase.mp3`);
+      audioFiles.set(q.fullSentence, `${prefix}-sentence.mp3`);
+    });
+    function stopVoice() {
+      voicePlayer.pause();
+      // iOS may reject seeking before metadata is loaded.
+      if (voicePlayer.readyState > 0) {
+        try { voicePlayer.currentTime = 0; } catch (_) {}
+      }
+    }
+    function speakText(text) {
+      const src = audioFiles.get(text);
+      if (!src) return;
+      stopVoice();
+      document.getElementById('audio-status').textContent = '正在載入美式英文錄音…';
+      voicePlayer.muted = false;
+      voicePlayer.volume = 1;
+      voicePlayer.src = new URL(src, document.baseURI).href;
+      voicePlayer.load();
+      const playback = voicePlayer.play();
+      if (playback) playback.catch(() => {
+        document.getElementById('audio-status').textContent = '請點下方播放器的 ▶ 播放；若仍無聲，請確認手機媒體音量。';
+      });
+    }
+    voicePlayer.addEventListener('error', () => {
+      document.getElementById('audio-status').textContent = 'MP3 載入失敗，請重新整理頁面後再點 🔊。';
+    });
+    voicePlayer.addEventListener('playing', () => {
+      document.getElementById('audio-status').textContent = '🔊 正在播放美式英文錄音';
+    });
+    voicePlayer.addEventListener('ended', () => {
+      document.getElementById('audio-status').textContent = '點 🔊 播放 Google 美式英文 MP3';
+    });
+
+    function speakPhrase() {
+      const q = collocationQuestions[quizOrder[currentIdx]];
+      speakText(`${q.verb} ${q.correctNoun}`);
     }
 
     function speakVerb() {

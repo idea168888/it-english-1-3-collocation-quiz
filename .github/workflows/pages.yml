@@ -39,3 +39,27 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify published homepage and every MP3 over HTTPS
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          python - <<'PY'
+          import os, json, time, urllib.request
+          base = os.environ['SITE_URL'].rstrip('/') + '/'
+          for attempt in range(12):
+              try:
+                  html = urllib.request.urlopen(base + '?audio-build=mp3-fix-v2', timeout=30).read().decode()
+                  assert 'mp3-fix-v2' in html, 'Previous homepage still cached'
+                  for item in json.load(open('scripts/voice-texts.json')):
+                      for kind in ('verb', 'phrase', 'sentence'):
+                          response = urllib.request.urlopen(base + 'audio/' + item['id'] + '-' + kind + '.mp3', timeout=30)
+                          data = response.read()
+                          assert len(data) > 500, 'Missing or empty MP3'
+                          assert data.startswith(b'ID3') or data[0] == 255, 'Invalid MP3 header'
+                  print('Live homepage and all 54 MP3 files verified over HTTPS')
+                  break
+              except Exception:
+                  if attempt == 11: raise
+                  time.sleep(10)
+          PY
