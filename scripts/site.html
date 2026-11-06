@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="資訊英文第1至3課，18組搭配詞互動測驗，點喇叭播放 Google 美式英文 MP3。">
+  <meta property="og:title" content="資訊英文1–3搭配詞點擊測驗">
+  <meta property="og:description" content="18組搭配詞互動練習，搭配美式英文 MP3 發音。">
+  <meta property="og:type" content="website">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>資訊英文1–3搭配詞點擊測驗</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      background: radial-gradient(circle at top left, #1e1b4b, #0f172a 60%, #020617);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .glass-panel {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(148, 163, 184, 0.15) inset;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .animate-pop {
+      animation: popIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-shake {
+      animation: shake 0.35s ease-in-out;
+    }
+
+    /* 自定義捲軸 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="text-slate-100 flex flex-col items-center justify-between py-6 px-4 select-none">
+
+  <!-- 頂部標題與計分板 -->
+  <header class="w-full max-w-2xl flex flex-col items-center text-center space-y-3 z-10">
+    <div class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-semibold tracking-wider uppercase">
+      <i class="fa-solid fa-puzzle-piece"></i>
+      <span>AI & Information Collocation Quiz</span>
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-cyan-300">
+      資訊英文1–3搭配詞點擊測驗
+    </h1>
+
+    <!-- 狀態資訊列 -->
+    <div class="w-full flex flex-wrap items-center justify-between gap-2 pt-2 text-xs sm:text-sm px-1">
+      <div class="flex items-center space-x-2">
+        <span id="question-counter" class="px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 text-indigo-300 font-bold">
+          題目 1 / 18
+        </span>
+        <button onclick="toggleListModal()" class="px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-book-open"></i>
+          <span>搭配詞總覽</span>
+        </button>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <div class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-300 font-bold flex items-center space-x-1.5">
+          <i class="fa-solid fa-fire"></i>
+          <span>連對：<span id="streak-count">0</span></span>
+        </div>
+        <div class="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 font-extrabold flex items-center space-x-1.5 shadow-sm">
+          <i class="fa-solid fa-star"></i>
+          <span>得分：<span id="score-display">0</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 進度條 -->
+    <div class="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden">
+      <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 via-cyan-400 to-emerald-400 h-full transition-all duration-300" style="width: 5.5%"></div>
+    </div>
+  </header>
+
+  <!-- 中央主測驗區 -->
+  <main id="quiz-container" class="w-full max-w-2xl my-4 flex flex-col space-y-4 flex-grow justify-center">
+
+    <!-- 題目卡：顯示核心動詞與課本情境提示 -->
+    <section class="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center relative overflow-hidden">
+      <div class="w-full flex items-center justify-between text-xs text-slate-400 mb-3">
+        <span id="unit-badge" class="px-2.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-400/20">
+          Unit 1 · 電路基礎
+        </span>
+        <button onclick="speakVerb()" class="px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-indigo-300 transition flex items-center space-x-1.5" title="聽取動詞發音">
+          <i class="fa-solid fa-volume-high"></i>
+          <span>🔊 動詞發音</span>
+        </button>
+      </div>
+
+      <p class="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-1">
+        請選擇與下方【目標動詞】最正確的名詞搭配
+      </p>
+
+      <!-- 目標動詞展示 -->
+      <div class="my-2 flex flex-col items-center">
+        <div class="flex items-baseline space-x-2">
+          <span class="text-xs font-mono px-2 py-0.5 rounded bg-indigo-500/30 text-indigo-200 font-bold">v. 動詞</span>
+          <h2 id="verb-title" class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+            provide
+          </h2>
+        </div>
+        <div class="flex items-center space-x-2 mt-1.5">
+          <span id="verb-phonetic" class="text-sm font-mono text-indigo-400">/prəˈvaɪd/</span>
+          <span class="text-slate-600">·</span>
+          <span id="verb-zh" class="text-base sm:text-lg font-bold text-cyan-300">提供；供應</span>
+        </div>
+      </div>
+
+      <!-- 課本句子挖空提示 -->
+      <div class="w-full mt-4 bg-slate-900/75 border border-slate-700/80 rounded-2xl p-4 text-left">
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+          <span><i class="fa-solid fa-quote-left text-indigo-400 mr-1.5"></i>課本原句搭配情境：</span>
+          <button onclick="speakSentence()" class="text-indigo-400 hover:text-indigo-200 transition flex items-center space-x-1">
+            <i class="fa-solid fa-play text-[10px]"></i>
+            <span>🔊 朗讀整句</span>
+          </button>
+        </div>
+        <p id="sentence-prompt" class="text-sm sm:text-base text-slate-100 font-medium leading-relaxed">
+          A power source, such as a generator or battery, <span class="text-amber-300 font-bold underline decoration-amber-400/60">provides</span> <span id="blank-slot" class="inline-block px-3 py-0.5 mx-1 rounded-lg bg-indigo-500/20 border border-dashed border-indigo-400 text-indigo-300 font-bold">_______</span> to the circuit.
+        </p>
+      </div>
+    </section>
+
+    <!-- 四個名詞配對選項按鈕 -->
+    <section id="options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <!-- 由 JS 動態生成 4 個選項 -->
+    </section>
+
+    <!-- 答題回饋區（答對綠色提示 / 答錯紅字與中文解析） -->
+    <section id="feedback-box" class="hidden rounded-2xl p-4 sm:p-5 border transition-all"></section>
+
+  </main>
+
+  <!-- 測驗完成結算畫面 (預設隱藏) -->
+  <main id="result-screen" class="hidden w-full max-w-xl my-auto glass-panel rounded-3xl p-8 text-center space-y-6 animate-pop">
+    <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-emerald-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/20">
+      <i class="fa-solid fa-trophy text-3xl text-white"></i>
+    </div>
+    <div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-white">搭配詞測驗完成！</h2>
+      <p class="text-sm text-slate-400 mt-1">你已完成第 1～3 課所有核心動詞與名詞的搭配訓練</p>
+    </div>
+
+    <div class="grid grid-cols-3 gap-3 bg-slate-900/70 p-4 rounded-2xl border border-slate-800">
+      <div>
+        <span class="text-xs text-slate-400 block">最終總分</span>
+        <span id="final-score" class="text-2xl font-extrabold text-emerald-400">180</span>
+      </div>
+      <div>
+        <span class="text-xs text-slate-400 block">一次答對題數</span>
+        <span id="final-accuracy" class="text-2xl font-extrabold text-indigo-300">18 / 18</span>
+      </div>
+      <div>
+        <span class="text-xs text-slate-400 block">最高連對</span>
+        <span id="final-streak" class="text-2xl font-extrabold text-amber-400">18</span>
+      </div>
+    </div>
+
+    <button onclick="restartQuiz()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold text-lg shadow-xl transition flex items-center justify-center space-x-2">
+      <i class="fa-solid fa-rotate-right"></i>
+      <span>重新隨機挑戰一次</span>
+    </button>
+  </main>
+
+  <p id="audio-status" role="status" aria-live="polite" class="text-xs text-slate-400 text-center my-3">點 🔊 播放 Google 美式英文 MP3</p>
+  <!-- 底部導覽列 -->
+  <footer id="quiz-footer" class="w-full max-w-2xl flex items-center justify-between gap-3 z-10">
+    <button onclick="prevQuestion()" class="px-4 py-3.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold transition flex items-center space-x-2">
+      <i class="fa-solid fa-arrow-left"></i>
+      <span class="hidden sm:inline">上一題</span>
+    </button>
+
+    <button id="next-btn" onclick="nextQuestion()" class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold text-base sm:text-lg shadow-xl shadow-indigo-500/20 transition flex items-center justify-center space-x-2">
+      <span>下一題</span>
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </footer>
+
+  <!-- 搭配詞總覽彈出視窗 -->
+  <div id="list-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-2xl max-h-[82vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-white">第 1～3 課 動詞＋名詞搭配詞總覽 (共 18 組)</h3>
+          <p class="text-xs text-slate-400">整理自上傳課本課文與 Vocabulary Building 練習題</p>
+        </div>
+        <button onclick="toggleListModal()" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="collocation-list-container" class="p-4 overflow-y-auto space-y-2.5">
+        <!-- 動態渲染列表 -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 內建 18 組來自課本第 1~3 課閱讀與習題的「動詞 + 名詞」核心搭配詞題庫
+    const collocationQuestions = [
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "provide",
+        verbDisplay: "provides",
+        phonetic: "/prəˈvaɪd/",
+        verbZh: "提供；供應",
+        correctNoun: "electrical current",
+        correctNounZh: "電流",
+        distractors: [
+          { en: "high resistance", zh: "高電阻" },
+          { en: "the dining table", zh: "餐桌" },
+          { en: "the heavy box", zh: "重箱子" }
+        ],
+        sentenceBefore: "A power source, such as a generator or battery,",
+        sentenceAfter: "to the circuit.",
+        fullSentence: "A power source, such as a generator or battery, provides electrical current to the circuit.",
+        explanation: "【課本搭配】provide electrical current / electricity（提供電流／電力）。電源（power source）的功能是提供電流給電路，而電阻（resistance）則是負載的特性。"
+      },
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "carry",
+        verbDisplay: "carries",
+        phonetic: "/ˈkæri/",
+        verbZh: "傳送；輸送；搬運",
+        correctNoun: "the current",
+        correctNounZh: "電流（亦可搭配 the heavy box）",
+        distractors: [
+          { en: "the recipe", zh: "食譜" },
+          { en: "critical thinking", zh: "批判性思考" },
+          { en: "climate change", zh: "氣候變遷" }
+        ],
+        sentenceBefore: "A conductor, typically a wire or cable,",
+        sentenceAfter: "through the circuit components.",
+        fullSentence: "A conductor, typically a wire or cable, carries the current through the circuit components.",
+        explanation: "【課本搭配】carry the current（傳送／輸送電流）。導體（如電線或電纜）負責將電流傳送通過電路元件。"
+      },
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "convert",
+        verbDisplay: "convert",
+        phonetic: "/kənˈvɜːrt/",
+        verbZh: "轉換；轉變",
+        correctNoun: "sunlight into electricity",
+        correctNounZh: "陽光成為電力",
+        distractors: [
+          { en: "all the wiring", zh: "所有配線" },
+          { en: "negative attitudes", zh: "負面態度" },
+          { en: "the length of a wire", zh: "電線的長度" }
+        ],
+        sentenceBefore: "Solar panels can",
+        sentenceAfter: ".",
+        fullSentence: "Solar panels can convert sunlight into electricity.",
+        explanation: "【課本搭配】convert A into B（將 A 轉換成 B）。課本第 1、2 課皆出現：convert sunlight into electricity（將陽光轉換成電力）。"
+      },
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "include",
+        verbDisplay: "include",
+        phonetic: "/ɪnˈkluːd/",
+        verbZh: "包含；包括",
+        correctNoun: "other components",
+        correctNounZh: "其他零件（如開關、保險絲）",
+        distractors: [
+          { en: "the pace of change", zh: "變遷的步調" },
+          { en: "a plus sign", zh: "正號標誌" },
+          { en: "electrical force", zh: "電力強度" }
+        ],
+        sentenceBefore: "Depending on its design, a circuit will often",
+        sentenceAfter: "such as switches, resistors, and fuses.",
+        fullSentence: "Depending on its design, a circuit will often include other components such as switches, resistors, and fuses.",
+        explanation: "【課本搭配】include other components / extra parts（包含其他零件／額外部件）。"
+      },
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "measure",
+        verbDisplay: "measure",
+        phonetic: "/ˈmeʒər/",
+        verbZh: "測量；衡量",
+        correctNoun: "the ingredients",
+        correctNounZh: "食材的份量（或 the electrical force）",
+        distractors: [
+          { en: "a healthy lifestyle", zh: "健康的生活方式" },
+          { en: "a power source", zh: "電源供應" },
+          { en: "artificial waterfalls", zh: "人造瀑布" }
+        ],
+        sentenceBefore: "You need to",
+        sentenceAfter: "carefully for this recipe.",
+        fullSentence: "You need to measure the ingredients carefully for this recipe.",
+        explanation: "【課本習題搭配】measure the ingredients（測量食材份量）或 Volts measure the electrical force（伏特測量電路中的電力）。"
+      },
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "represent",
+        verbDisplay: "represent",
+        phonetic: "/ˌreprɪˈzent/",
+        verbZh: "代表；象徵",
+        correctNoun: "unity, strength",
+        correctNounZh: "團結與力量（或 electrical power）",
+        distractors: [
+          { en: "a cheap hard drive", zh: "便宜的硬碟" },
+          { en: "agricultural waste", zh: "農業廢棄物" },
+          { en: "heavy gloves", zh: "厚手套" }
+        ],
+        sentenceBefore: "The colors of this flag",
+        sentenceAfter: ", and dedication.",
+        fullSentence: "The colors of this flag represent unity, strength, and dedication.",
+        explanation: "【課本習題搭配】represent unity, strength, and dedication（象徵團結、力量與奉獻）；課文中亦有 Watts represent electrical power（瓦特代表電功率）。"
+      },
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "quantify",
+        verbDisplay: "quantify",
+        phonetic: "/ˈkwɑːntɪfaɪ/",
+        verbZh: "量化；以數字表示",
+        correctNoun: "the strength of materials",
+        correctNounZh: "材料的強度（或 the resistance）",
+        distractors: [
+          { en: "her free time", zh: "她的空閒時間" },
+          { en: "the old hotel lobby", zh: "老飯店大廳" },
+          { en: "a basic audience", zh: "基礎聽眾" }
+        ],
+        sentenceBefore: "The engineering department wants to buy better instruments to",
+        sentenceAfter: ".",
+        fullSentence: "The engineering department wants to buy better instruments to quantify the strength of materials.",
+        explanation: "【課本習題搭配】quantify the strength of materials（量化／測定材料的強度）；課文中亦有 Ohms quantify the resistance（歐姆量化電阻）。"
+      },
+      {
+        unit: "Unit 1 · 電路基礎",
+        verb: "ensure",
+        verbDisplay: "ensuring",
+        phonetic: "/ɪnˈʃʊr/",
+        verbZh: "確保；保證",
+        correctNoun: "efficiency and reliability",
+        correctNounZh: "效率與可靠性",
+        distractors: [
+          { en: "fossil fuels", zh: "化石燃料" },
+          { en: "plastic waste", zh: "塑膠廢棄物" },
+          { en: "artificial flowers", zh: "人造花" }
+        ],
+        sentenceBefore: "Additional components help complete the design of the power delivery system,",
+        sentenceAfter: ".",
+        fullSentence: "Additional components help complete the design of the power delivery system, ensuring efficiency and reliability.",
+        explanation: "【課本搭配】ensure efficiency and reliability（確保效率與可靠性），習題中亦有 ensure everything was working properly（確保一切運作正常）。"
+      },
+      {
+        unit: "Unit 2 · 再生能源",
+        verb: "harness",
+        verbDisplay: "harnessing",
+        phonetic: "/ˈhɑːrnɪs/",
+        verbZh: "駕馭；利用（自然力量）",
+        correctNoun: "natural resources",
+        correctNounZh: "自然資源（或 wind energy）",
+        distractors: [
+          { en: "unwanted signals", zh: "不需要的訊號" },
+          { en: "phone battery life", zh: "手機電池壽命" },
+          { en: "teacher's instructions", zh: "老師的指示" }
+        ],
+        sentenceBefore: "Renewable energy generation consists of several main types, each",
+        sentenceAfter: "to produce electricity sustainably.",
+        fullSentence: "Renewable energy generation consists of several main types, each harnessing natural resources to produce electricity sustainably.",
+        explanation: "【課本搭配】harness natural resources / wind energy（駕馭並利用自然資源／風能來發電）。"
+      },
+      {
+        unit: "Unit 2 · 再生能源",
+        verb: "utilize",
+        verbDisplay: "utilize",
+        phonetic: "/ˈjuːtəlaɪz/",
+        verbZh: "利用；使用；應用",
+        correctNoun: "her free time",
+        correctNounZh: "她的空閒時間（或 photovoltaic cells）",
+        distractors: [
+          { en: "a minus sign", zh: "負號標誌" },
+          { en: "the dining table", zh: "餐桌" },
+          { en: "climate change", zh: "氣候變遷" }
+        ],
+        sentenceBefore: "Alice is going to",
+        sentenceAfter: "to learn a new language.",
+        fullSentence: "Alice is going to utilize her free time to learn a new language.",
+        explanation: "【課本習題搭配】utilize her free time（利用她的空閒時間）；課文中則搭配 Solar energy utilizes photovoltaic (PV) cells（太陽能利用光電電池）。"
+      },
+      {
+        unit: "Unit 2 · 再生能源",
+        verb: "spin",
+        verbDisplay: "spin",
+        phonetic: "/spɪn/",
+        verbZh: "旋轉；轉動",
+        correctNoun: "the turbines",
+        correctNounZh: "渦輪機（或 a generator）",
+        distractors: [
+          { en: "the wiring", zh: "配線" },
+          { en: "organic waste", zh: "有機廢棄物" },
+          { en: "external storage", zh: "外部儲存空間" }
+        ],
+        sentenceBefore: "Steam is used to",
+        sentenceAfter: "in this power plant.",
+        fullSentence: "Steam is used to spin the turbines in this power plant.",
+        explanation: "【課本習題搭配】spin the turbines / spin a generator（推動渦輪機／發電機旋轉）。"
+      },
+      {
+        unit: "Unit 2 · 再生能源",
+        verb: "decompose",
+        verbDisplay: "decomposes",
+        phonetic: "/ˌdiːkəmˈpoʊz/",
+        verbZh: "分解；腐爛",
+        correctNoun: "organic material",
+        correctNounZh: "有機物質（植物性材料）",
+        distractors: [
+          { en: "solar panels", zh: "太陽能板" },
+          { en: "electric current", zh: "電流" },
+          { en: "active components", zh: "主動元件" }
+        ],
+        sentenceBefore: "Biomass digesters use",
+        sentenceAfter: "that decomposes in a digester to produce clean biogas.",
+        fullSentence: "Biomass digesters use organic material that decomposes in a digester to produce clean biogas.",
+        explanation: "【課本搭配】organic material / organic waste decomposes in a digester（有機物質／廢棄物在消化槽中分解以產生沼氣）。"
+      },
+      {
+        unit: "Unit 3 · 電子元件",
+        verb: "operate",
+        verbDisplay: "operate",
+        phonetic: "/ˈɑːpəreɪt/",
+        verbZh: "運轉；操作",
+        correctNoun: "these active components",
+        correctNounZh: "這些主動元件",
+        distractors: [
+          { en: "plastic waste", zh: "塑膠廢棄物" },
+          { en: "unity and strength", zh: "團結與力量" },
+          { en: "the ingredients", zh: "食材份量" }
+        ],
+        sentenceBefore: "Did you know that we can use solar power to",
+        sentenceAfter: "?",
+        fullSentence: "Did you know that we can use solar power to operate these active components?",
+        explanation: "【課本習題搭配】operate these active components（操作這些主動元件／讓主動元件運轉）。"
+      },
+      {
+        unit: "Unit 3 · 電子元件",
+        verb: "amplify",
+        verbDisplay: "amplify",
+        phonetic: "/ˈæmplɪfaɪ/",
+        verbZh: "放大；增強",
+        correctNoun: "weak electrical signals",
+        correctNounZh: "微弱的電訊號",
+        distractors: [
+          { en: "fossil fuels", zh: "化石燃料" },
+          { en: "heavy gloves", zh: "厚手套" },
+          { en: "the heavy box", zh: "重箱子" }
+        ],
+        sentenceBefore: "Our engineers can use transistors to",
+        sentenceAfter: ".",
+        fullSentence: "Our engineers can use transistors to amplify weak electrical signals.",
+        explanation: "【課本習題搭配】amplify weak electrical signals（放大微弱的電訊號）。電晶體（transistors）專門用來放大訊號或作為開關。"
+      },
+      {
+        unit: "Unit 3 · 電子元件",
+        verb: "protect",
+        verbDisplay: "protects",
+        phonetic: "/prəˈtekt/",
+        verbZh: "保護；防護",
+        correctNoun: "my phone's battery life",
+        correctNounZh: "我手機的電池壽命（或 circuits）",
+        distractors: [
+          { en: "unwanted signals", zh: "不需要的訊號" },
+          { en: "a large amount of pollution", zh: "大量的污染" },
+          { en: "negative attitudes", zh: "負面態度" }
+        ],
+        sentenceBefore: "The software update",
+        sentenceAfter: ".",
+        fullSentence: "The software update protects my phone's battery life.",
+        explanation: "【課本習題搭配】protect my phone's battery life（保護手機電池壽命）以及 protecting circuits（保護電路）。"
+      },
+      {
+        unit: "Unit 3 · 電子元件",
+        verb: "boost",
+        verbDisplay: "boosted",
+        phonetic: "/buːst/",
+        verbZh: "促進；增加；提升",
+        correctNoun: "the performance of electronic devices",
+        correctNounZh: "電子設備的效能",
+        distractors: [
+          { en: "the size of devices", zh: "設備的體積" },
+          { en: "harmful pollution", zh: "有害的污染" },
+          { en: "passive categories", zh: "被動類別" }
+        ],
+        sentenceBefore: "Integrated circuits (ICs) have",
+        sentenceAfter: "and reduced their size.",
+        fullSentence: "Integrated circuits (ICs) have boosted the performance of electronic devices and reduced their size.",
+        explanation: "【課本搭配】boost the performance of electronic devices（提升電子設備的效能）。"
+      },
+      {
+        unit: "Unit 3 · 電子元件",
+        verb: "detect",
+        verbDisplay: "detect",
+        phonetic: "/dɪˈtekt/",
+        verbZh: "探測；檢測；發現",
+        correctNoun: "changes in the environment",
+        correctNounZh: "環境中的變化（如溫度或光線）",
+        distractors: [
+          { en: "traditional fossil fuels", zh: "傳統化石燃料" },
+          { en: "critical thinking", zh: "批判性思考" },
+          { en: "the lobby of the hotel", zh: "飯店的大廳" }
+        ],
+        sentenceBefore: "Sensors",
+        sentenceAfter: ", such as temperature or light, and turn them into electrical signals.",
+        fullSentence: "Sensors detect changes in the environment, such as temperature or light, and turn them into electrical signals.",
+        explanation: "【課本搭配】detect changes in the environment（探測環境中的變化，如溫度或光線）。"
+      },
+      {
+        unit: "Unit 3 · 電子元件",
+        verb: "link",
+        verbDisplay: "link",
+        phonetic: "/lɪŋk/",
+        verbZh: "連結；聯繫",
+        correctNoun: "the different parts of this circuit",
+        correctNounZh: "電路的不同部分",
+        distractors: [
+          { en: "agricultural waste", zh: "農業廢棄物" },
+          { en: "high resistance to fire", zh: "高耐火性" },
+          { en: "her free time", zh: "她的空閒時間" }
+        ],
+        sentenceBefore: "These connectors",
+        sentenceAfter: "together.",
+        fullSentence: "These connectors link the different parts of this circuit together.",
+        explanation: "【課本習題搭配】link the different parts of a circuit together（將電路的不同部分連結在一起）。"
+      }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let firstTryCorrectCount = 0;
+    let attemptedThisQuestion = false;
+    let questionSolved = false;
+    let quizOrder = collocationQuestions.map((_, i) => i);
+
+    // 音效合成器 (Web Audio API，無須外部音檔)
+    let audioCtx;
+    function getAudioContext() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+      return audioCtx || (audioCtx = new AudioContextClass());
+    }
+    function playSound(isCorrect) {
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      if (isCorrect) {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.09); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.18); // G5
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+        osc.start(now);
+        osc.stop(now + 0.38);
+      } else {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.setValueAtTime(165, now + 0.12);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function renderQuestion() {
+      stopVoice();
+      const q = collocationQuestions[quizOrder[currentIdx]];
+      attemptedThisQuestion = false;
+      questionSolved = false;
+
+      // 更新頂部進度
+      document.getElementById('question-counter').textContent = `題目 ${currentIdx + 1} / ${collocationQuestions.length}`;
+      document.getElementById('progress-bar').style.width = `${((currentIdx + 1) / collocationQuestions.length) * 100}%`;
+      document.getElementById('unit-badge').textContent = q.unit;
+
+      // 更新動詞資訊
+      document.getElementById('verb-title').textContent = q.verb;
+      document.getElementById('verb-phonetic').textContent = q.phonetic;
+      document.getElementById('verb-zh').textContent = q.verbZh;
+
+      // 更新例句挖空提示
+      const sentencePrompt = document.getElementById('sentence-prompt');
+      sentencePrompt.innerHTML = `
+        ${q.sentenceBefore}
+        <span class="text-amber-300 font-bold underline decoration-amber-400/60 mx-1">${q.verbDisplay}</span>
+        <span id="blank-slot" class="inline-block px-3 py-0.5 mx-1 rounded-lg bg-indigo-500/20 border border-dashed border-indigo-400 text-indigo-300 font-bold">_______</span>
+        ${q.sentenceAfter}
+      `;
+
+      // 隱藏回饋區
+      const feedbackBox = document.getElementById('feedback-box');
+      feedbackBox.className = 'hidden';
+      feedbackBox.innerHTML = '';
+
+      // 組合並打亂 4 個名詞選項
+      const allOptions = shuffleArray([
+        { en: q.correctNoun, zh: q.correctNounZh, isCorrect: true },
+        ...q.distractors.map(d => ({ en: d.en, zh: d.zh, isCorrect: false }))
+      ]);
+
+      const optionsGrid = document.getElementById('options-grid');
+      optionsGrid.innerHTML = '';
+
+      allOptions.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn w-full p-4 sm:p-5 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border-2 border-slate-700/80 hover:border-indigo-400/60 text-left transition-all flex items-center justify-between group shadow-md active:scale-[0.99]';
+        btn.innerHTML = `
+          <div class="pr-2">
+            <div class="flex items-center space-x-2">
+              <span class="w-6 h-6 rounded-lg bg-slate-700 text-slate-300 text-xs font-bold flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition">
+                ${['A', 'B', 'C', 'D'][idx]}
+              </span>
+              <span class="opt-en text-base sm:text-lg font-bold text-white group-hover:text-indigo-200 transition">${opt.en}</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1 pl-8">${opt.zh}</p>
+          </div>
+          <i class="status-icon fa-solid fa-circle-chevron-right text-slate-600 group-hover:text-indigo-400 text-lg transition"></i>
+        `;
+        btn.onclick = () => handleSelectOption(btn, opt, q);
+        optionsGrid.appendChild(btn);
+      });
+    }
+
+    function handleSelectOption(btn, opt, q) {
+      if (questionSolved) return;
+
+      const feedbackBox = document.getElementById('feedback-box');
+      const blankSlot = document.getElementById('blank-slot');
+
+      if (opt.isCorrect) {
+        questionSolved = true;
+        playSound(true);
+
+        // 計分與連對獎勵
+        const gained = attemptedThisQuestion ? 5 : 10;
+        score += gained;
+        if (!attemptedThisQuestion) {
+          streak++;
+          firstTryCorrectCount++;
+          if (streak > maxStreak) maxStreak = streak;
+        }
+        document.getElementById('score-display').textContent = score;
+        document.getElementById('streak-count').textContent = streak;
+
+        // 填入空格並標示為翠綠色
+        if (blankSlot) {
+          blankSlot.textContent = opt.en;
+          blankSlot.className = 'inline-block px-3 py-0.5 mx-1 rounded-lg bg-emerald-500/25 border border-emerald-400 text-emerald-300 font-extrabold animate-pop';
+        }
+
+        // 按鈕改為綠色成功樣式
+        btn.className = 'option-btn w-full p-4 sm:p-5 rounded-2xl bg-emerald-950/80 border-2 border-emerald-400 text-left transition-all flex items-center justify-between shadow-lg shadow-emerald-500/15 animate-pop';
+        btn.querySelector('.opt-en').className = 'opt-en text-base sm:text-lg font-extrabold text-emerald-300';
+        btn.querySelector('.status-icon').className = 'status-icon fa-solid fa-circle-check text-emerald-400 text-xl';
+
+        // 顯示綠色成功提示框
+        feedbackBox.className = 'rounded-2xl p-4 sm:p-5 bg-emerald-950/75 border-2 border-emerald-500/70 text-emerald-100 animate-pop';
+        feedbackBox.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start space-x-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shrink-0 mt-0.5">
+                <i class="fa-solid fa-check text-lg"></i>
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="font-extrabold text-emerald-300 text-base">配對正確！ +${gained} 分</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold">
+                    ${q.verb} + ${q.correctNoun}
+                  </span>
+                </div>
+                <p class="text-xs sm:text-sm text-emerald-100/90 mt-1.5 leading-relaxed">${q.explanation}</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        feedbackBox.insertAdjacentHTML('beforeend', `<button type="button" onclick="speakPhrase()" class="mt-3 px-4 py-2 rounded-xl bg-emerald-800 text-white">🔊 重聽搭配詞</button>`);
+
+        // 自動朗讀正確搭配詞
+        speakText(`${q.verb} ${q.correctNoun}`, 0.92);
+
+      } else {
+        // 答錯處理：紅字與中文解析
+        attemptedThisQuestion = true;
+        streak = 0;
+        document.getElementById('streak-count').textContent = streak;
+        playSound(false);
+
+        btn.className = 'option-btn w-full p-4 sm:p-5 rounded-2xl bg-rose-950/70 border-2 border-rose-500 text-left transition-all flex items-center justify-between animate-shake';
+        btn.querySelector('.opt-en').className = 'opt-en text-base sm:text-lg font-extrabold text-rose-400 line-through';
+        btn.querySelector('.status-icon').className = 'status-icon fa-solid fa-circle-xmark text-rose-400 text-xl';
+
+        feedbackBox.className = 'rounded-2xl p-4 sm:p-5 bg-rose-950/80 border-2 border-rose-500/80 text-rose-100 animate-pop';
+        feedbackBox.innerHTML = `
+          <div class="flex items-start space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-rose-500/20 border border-rose-400/40 flex items-center justify-center text-rose-300 shrink-0 mt-0.5">
+              <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+            </div>
+            <div>
+              <p class="font-extrabold text-rose-300 text-base">
+                搭配錯誤：「<span class="text-rose-400 underline">${q.verb} ${opt.en}</span>」語意不合！
+              </p>
+              <p class="text-xs sm:text-sm text-rose-200 mt-1 leading-relaxed">
+                <strong class="text-white">中文解析：</strong>「${q.verb}」的意思是「<span class="text-amber-300 font-bold">${q.verbZh}</span>」，不能與「${opt.zh}（${opt.en}）」搭配。${q.explanation} 請再點選正確的名詞！
+              </p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function nextQuestion() {
+      if (currentIdx < collocationQuestions.length - 1) {
+        currentIdx++;
+        renderQuestion();
+      } else {
+        showResultScreen();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentIdx > 0) {
+        currentIdx--;
+        renderQuestion();
+      }
+    }
+
+    function showResultScreen() {
+      stopVoice();
+      document.getElementById('quiz-container').classList.add('hidden');
+      document.getElementById('quiz-footer').classList.add('hidden');
+      const resultScreen = document.getElementById('result-screen');
+      resultScreen.classList.remove('hidden');
+
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('final-accuracy').textContent = `${firstTryCorrectCount} / ${collocationQuestions.length}`;
+      document.getElementById('final-streak').textContent = maxStreak;
+    }
+
+    function restartQuiz() {
+      quizOrder = shuffleArray(collocationQuestions.map((_, i) => i));
+      currentIdx = 0;
+      score = 0;
+      streak = 0;
+      maxStreak = 0;
+      firstTryCorrectCount = 0;
+
+      document.getElementById('score-display').textContent = '0';
+      document.getElementById('streak-count').textContent = '0';
+      document.getElementById('result-screen').classList.add('hidden');
+      document.getElementById('quiz-container').classList.remove('hidden');
+      document.getElementById('quiz-footer').classList.remove('hidden');
+
+      renderQuestion();
+    }
+
+    // 固定的同站 MP3；直接在使用者點擊事件中呼叫 play()。
+    const voicePlayer = new Audio();
+    voicePlayer.preload = 'none';
+    voicePlayer.setAttribute('playsinline', '');
+    const audioFiles = new Map();
+    collocationQuestions.forEach((q, i) => {
+      const prefix = `audio/${String(i + 1).padStart(2, '0')}`;
+      audioFiles.set(q.verb, `${prefix}-verb.mp3`);
+      audioFiles.set(`${q.verb} ${q.correctNoun}`, `${prefix}-phrase.mp3`);
+      audioFiles.set(q.fullSentence, `${prefix}-sentence.mp3`);
+    });
+    function stopVoice() {
+      voicePlayer.pause();
+      voicePlayer.currentTime = 0;
+    }
+    function speakText(text) {
+      const src = audioFiles.get(text);
+      if (!src) return;
+      stopVoice();
+      document.getElementById('audio-status').textContent = '正在載入美式英文錄音…';
+      voicePlayer.src = src;
+      const playback = voicePlayer.play();
+      if (playback) playback.catch(() => {
+        document.getElementById('audio-status').textContent = '錄音暫時無法播放，請再點一次 🔊；也可用 Safari 或 Chrome 開啟。';
+      });
+    }
+    voicePlayer.addEventListener('playing', () => {
+      document.getElementById('audio-status').textContent = '🔊 正在播放美式英文錄音';
+    });
+    voicePlayer.addEventListener('ended', () => {
+      document.getElementById('audio-status').textContent = '點 🔊 播放 Google 美式英文 MP3';
+    });
+
+    function speakPhrase() {
+      const q = collocationQuestions[quizOrder[currentIdx]];
+      speakText(`${q.verb} ${q.correctNoun}`);
+    }
+
+    function speakVerb() {
+      const q = collocationQuestions[quizOrder[currentIdx]];
+      speakText(q.verb, 0.85);
+    }
+
+    function speakSentence() {
+      const q = collocationQuestions[quizOrder[currentIdx]];
+      speakText(q.fullSentence, 0.92);
+    }
+
+    function toggleListModal() {
+      const modal = document.getElementById('list-modal');
+      modal.classList.toggle('hidden');
+      if (!modal.classList.contains('hidden')) {
+        populateCollocationList();
+      }
+    }
+
+    function populateCollocationList() {
+      const container = document.getElementById('collocation-list-container');
+      container.innerHTML = '';
+      collocationQuestions.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'p-3.5 rounded-2xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer transition';
+        div.onclick = () => {
+          const targetIdx = quizOrder.indexOf(idx);
+          currentIdx = targetIdx !== -1 ? targetIdx : 0;
+          renderQuestion();
+          toggleListModal();
+        };
+        div.innerHTML = `
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-mono text-indigo-400">#${String(idx + 1).padStart(2, '0')}</span>
+              <span class="font-extrabold text-amber-300 text-base">${item.verb}</span>
+              <span class="text-slate-400">+</span>
+              <span class="font-bold text-emerald-300 text-base">${item.correctNoun}</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-1">${item.verbZh} ＋ ${item.correctNounZh}</p>
+          </div>
+          <span class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 text-slate-400 self-start sm:self-center shrink-0">
+            ${item.unit}
+          </span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 初始化第一題
+    renderQuestion();
+  </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+[
+  {
+    "id": "01",
+    "verb": "provide",
+    "phrase": "provide electrical current",
+    "sentence": "A power source, such as a generator or battery, provides electrical current to the circuit."
+  },
+  {
+    "id": "02",
+    "verb": "carry",
+    "phrase": "carry the current",
+    "sentence": "A conductor, typically a wire or cable, carries the current through the circuit components."
+  },
+  {
+    "id": "03",
+    "verb": "convert",
+    "phrase": "convert sunlight into electricity",
+    "sentence": "Solar panels can convert sunlight into electricity."
+  },
+  {
+    "id": "04",
+    "verb": "include",
+    "phrase": "include other components",
+    "sentence": "Depending on its design, a circuit will often include other components such as switches, resistors, and fuses."
+  },
+  {
+    "id": "05",
+    "verb": "measure",
+    "phrase": "measure the ingredients",
+    "sentence": "You need to measure the ingredients carefully for this recipe."
+  },
+  {
+    "id": "06",
+    "verb": "represent",
+    "phrase": "represent unity, strength",
+    "sentence": "The colors of this flag represent unity, strength, and dedication."
+  },
+  {
+    "id": "07",
+    "verb": "quantify",
+    "phrase": "quantify the strength of materials",
+    "sentence": "The engineering department wants to buy better instruments to quantify the strength of materials."
+  },
+  {
+    "id": "08",
+    "verb": "ensure",
+    "phrase": "ensure efficiency and reliability",
+    "sentence": "Additional components help complete the design of the power delivery system, ensuring efficiency and reliability."
+  },
+  {
+    "id": "09",
+    "verb": "harness",
+    "phrase": "harness natural resources",
+    "sentence": "Renewable energy generation consists of several main types, each harnessing natural resources to produce electricity sustainably."
+  },
+  {
+    "id": "10",
+    "verb": "utilize",
+    "phrase": "utilize her free time",
+    "sentence": "Alice is going to utilize her free time to learn a new language."
+  },
+  {
+    "id": "11",
+    "verb": "spin",
+    "phrase": "spin the turbines",
+    "sentence": "Steam is used to spin the turbines in this power plant."
+  },
+  {
+    "id": "12",
+    "verb": "decompose",
+    "phrase": "decompose organic material",
+    "sentence": "Biomass digesters use organic material that decomposes in a digester to produce clean biogas."
+  },
+  {
+    "id": "13",
+    "verb": "operate",
+    "phrase": "operate these active components",
+    "sentence": "Did you know that we can use solar power to operate these active components?"
+  },
+  {
+    "id": "14",
+    "verb": "amplify",
+    "phrase": "amplify weak electrical signals",
+    "sentence": "Our engineers can use transistors to amplify weak electrical signals."
+  },
+  {
+    "id": "15",
+    "verb": "protect",
+    "phrase": "protect my phone's battery life",
+    "sentence": "The software update protects my phone's battery life."
+  },
+  {
+    "id": "16",
+    "verb": "boost",
+    "phrase": "boost the performance of electronic devices",
+    "sentence": "Integrated circuits (ICs) have boosted the performance of electronic devices and reduced their size."
+  },
+  {
+    "id": "17",
+    "verb": "detect",
+    "phrase": "detect changes in the environment",
+    "sentence": "Sensors detect changes in the environment, such as temperature or light, and turn them into electrical signals."
+  },
+  {
+    "id": "18",
+    "verb": "link",
+    "phrase": "link the different parts of this circuit",
+    "sentence": "These connectors link the different parts of this circuit together."
+  }
+]
