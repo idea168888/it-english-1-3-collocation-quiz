@@ -4,6 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
 permissions:
+  actions: read
   contents: read
   pages: write
   id-token: write
@@ -36,6 +37,21 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+      # The branch-based Pages job can otherwise overwrite the MP3 artifact.
+      - name: Wait for branch Pages build before publishing audio
+        uses: actions/github-script@v7
+        with:
+          script: |
+            for (let attempt = 0; attempt < 36; attempt++) {
+              const { data } = await github.rest.actions.listWorkflowRunsForRepo({
+                ...context.repo, head_sha: context.sha, per_page: 100
+              });
+              const branchBuilds = data.workflow_runs.filter(run =>
+                run.name === 'pages build and deployment' && run.id !== context.runId);
+              if (branchBuilds.every(run => run.status === 'completed')) return;
+              await new Promise(resolve => setTimeout(resolve, 10000));
+            }
+            throw new Error('Branch Pages build is still running; avoid conflicting deployments');
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
