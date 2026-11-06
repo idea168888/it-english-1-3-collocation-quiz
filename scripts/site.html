@@ -192,7 +192,8 @@
   </main>
 
   <p id="audio-status" role="status" aria-live="polite" class="text-xs text-slate-400 text-center my-3">點 🔊 播放 Google 美式英文 MP3</p>
-  <audio id="voice-player" preload="auto" playsinline controls class="w-full max-w-2xl my-2" aria-label="英文 MP3 播放器"></audio>
+  <button id="retry-voice" type="button" hidden onclick="retryVoice()" class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-bold" aria-label="再次播放英文錄音">🔊 再播放一次</button>
+  <audio id="voice-player" preload="metadata" playsinline webkit-playsinline controls class="w-full max-w-2xl my-2" aria-label="英文 MP3 播放器"></audio>
   <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fidea168888.github.io%2Fit-english-1-3-collocation-quiz%2F" target="_blank" rel="noopener noreferrer" class="my-3 px-4 py-2 rounded-xl bg-blue-700 text-white text-sm font-semibold" aria-label="將此測驗分享到 Facebook">分享到 Facebook</a>
   <!-- 底部導覽列 -->
   <footer id="quiz-footer" class="w-full max-w-2xl flex items-center justify-between gap-3 z-10">
@@ -803,7 +804,7 @@
 
     // 固定的同站 MP3；直接在使用者點擊事件中呼叫 play()。
     const voicePlayer = document.getElementById('voice-player');
-    voicePlayer.preload = 'auto';
+    voicePlayer.preload = 'metadata';
     voicePlayer.setAttribute('playsinline', '');
     const audioFiles = new Map();
     collocationQuestions.forEach((q, i) => {
@@ -813,38 +814,73 @@
       audioFiles.set(q.fullSentence, `${prefix}-sentence.mp3`);
     });
     let voiceRequest = 0;
+    let selectedVoiceURL = '';
+    const voiceStatus = document.getElementById('audio-status');
+    const retryVoiceButton = document.getElementById('retry-voice');
     function stopVoice() {
       voiceRequest++;
       voicePlayer.pause();
-      document.getElementById('audio-status').textContent = '點 🔊 播放 Google 美式英文 MP3';
-      // iOS may reject seeking before metadata is loaded.
+      retryVoiceButton.hidden = true;
+      voiceStatus.textContent = '點 🔊 播放 Google 美式英文 MP3';
       if (voicePlayer.readyState > 0) {
         try { voicePlayer.currentTime = 0; } catch (_) {}
+      }
+    }
+    function voiceFailed(error, request) {
+      if (request !== voiceRequest) return;
+      retryVoiceButton.hidden = false;
+      voiceStatus.textContent = error && error.name === 'NotAllowedError'
+        ? '請點「再播放一次」或下方 ▶ 啟動英文發音。'
+        : '暫時無法播放，請確認網路與媒體音量，再點「再播放一次」。';
+    }
+    function startVoice(reload) {
+      const request = ++voiceRequest;
+      retryVoiceButton.hidden = true;
+      voiceStatus.textContent = '正在載入美式英文錄音…';
+      // Keep play() synchronous with the tap: no fetch/await or readiness callback.
+      try {
+        voicePlayer.muted = false;
+        if (reload || voicePlayer.src !== selectedVoiceURL) {
+          voicePlayer.src = selectedVoiceURL;
+        } else if (voicePlayer.readyState > 0) {
+          try { voicePlayer.currentTime = 0; } catch (_) {}
+        }
+        const playback = voicePlayer.play();
+        if (playback && typeof playback.catch === 'function') {
+          playback.catch(error => voiceFailed(error, request));
+        }
+      } catch (error) {
+        voiceFailed(error, request);
       }
     }
     function speakText(text) {
       const src = audioFiles.get(text);
       if (!src) return;
       stopVoice();
-      const request = voiceRequest;
-      document.getElementById('audio-status').textContent = '正在載入美式英文錄音…';
-      voicePlayer.muted = false;
-      voicePlayer.volume = 1;
-      voicePlayer.src = new URL(src + '?v=google-us-fb-3', document.baseURI).href;
-      const playback = voicePlayer.play();
-      if (playback) playback.catch(() => {
-        if (request !== voiceRequest) return;
-        document.getElementById('audio-status').textContent = '請點下方播放器的 ▶ 播放；若仍無聲，請確認手機媒體音量。';
-      });
+      selectedVoiceURL = new URL(src + '?v=google-us-mobile-4', document.baseURI).href;
+      startVoice(false);
     }
-    voicePlayer.addEventListener('error', () => {
-      document.getElementById('audio-status').textContent = 'MP3 載入失敗，請重新整理頁面後再點 🔊。';
-    });
+    function retryVoice() {
+      if (!selectedVoiceURL) return;
+      voicePlayer.pause();
+      startVoice(!!voicePlayer.error);
+    }
+    voicePlayer.addEventListener('error', () => voiceFailed(voicePlayer.error, voiceRequest));
     voicePlayer.addEventListener('playing', () => {
-      document.getElementById('audio-status').textContent = '🔊 正在播放美式英文錄音';
+      retryVoiceButton.hidden = true;
+      voiceStatus.textContent = '🔊 正在播放美式英文錄音';
+    });
+    voicePlayer.addEventListener('waiting', () => {
+      voiceStatus.textContent = '正在緩衝英文錄音…';
+      retryVoiceButton.hidden = false;
+    });
+    voicePlayer.addEventListener('stalled', () => {
+      voiceStatus.textContent = '網路較慢，可稍候或點「再播放一次」。';
+      retryVoiceButton.hidden = false;
     });
     voicePlayer.addEventListener('ended', () => {
-      document.getElementById('audio-status').textContent = '點 🔊 播放 Google 美式英文 MP3';
+      retryVoiceButton.hidden = true;
+      voiceStatus.textContent = '點 🔊 播放 Google 美式英文 MP3';
     });
 
     function speakPhrase() {
