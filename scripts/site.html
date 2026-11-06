@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">\n  <meta name="audio-build" content="mp3-fix-v2">
+  <meta charset="UTF-8">
+  <meta name="audio-build" content="mp3-fix-v2">
   <meta name="description" content="資訊英文第1至3課，18組搭配詞互動測驗，點喇叭播放 Google 美式英文 MP3。">
   <meta property="og:title" content="資訊英文1–3搭配詞點擊測驗">
   <meta property="og:description" content="18組搭配詞互動練習，搭配美式英文 MP3 發音。">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://idea168888.github.io/it-english-1-3-collocation-quiz/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>資訊英文1–3搭配詞點擊測驗</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -108,7 +110,7 @@
         <span id="unit-badge" class="px-2.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-400/20">
           Unit 1 · 電路基礎
         </span>
-        <button onclick="speakVerb()" class="px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-indigo-300 transition flex items-center space-x-1.5" title="聽取動詞發音">
+        <button aria-label="播放動詞的美式英文發音" onclick="speakVerb()" class="px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-indigo-300 transition flex items-center space-x-1.5" title="聽取動詞發音">
           <i class="fa-solid fa-volume-high"></i>
           <span>🔊 動詞發音</span>
         </button>
@@ -137,7 +139,7 @@
       <div class="w-full mt-4 bg-slate-900/75 border border-slate-700/80 rounded-2xl p-4 text-left">
         <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
           <span><i class="fa-solid fa-quote-left text-indigo-400 mr-1.5"></i>課本原句搭配情境：</span>
-          <button onclick="speakSentence()" class="text-indigo-400 hover:text-indigo-200 transition flex items-center space-x-1">
+          <button aria-label="播放完整英文例句" onclick="speakSentence()" class="text-indigo-400 hover:text-indigo-200 transition flex items-center space-x-1">
             <i class="fa-solid fa-play text-[10px]"></i>
             <span>🔊 朗讀整句</span>
           </button>
@@ -191,6 +193,7 @@
 
   <p id="audio-status" role="status" aria-live="polite" class="text-xs text-slate-400 text-center my-3">點 🔊 播放 Google 美式英文 MP3</p>
   <audio id="voice-player" preload="auto" playsinline controls class="w-full max-w-2xl my-2" aria-label="英文 MP3 播放器"></audio>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fidea168888.github.io%2Fit-english-1-3-collocation-quiz%2F" target="_blank" rel="noopener noreferrer" class="my-3 px-4 py-2 rounded-xl bg-blue-700 text-white text-sm font-semibold" aria-label="將此測驗分享到 Facebook">分享到 Facebook</a>
   <!-- 底部導覽列 -->
   <footer id="quiz-footer" class="w-full max-w-2xl flex items-center justify-between gap-3 z-10">
     <button onclick="prevQuestion()" class="px-4 py-3.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold transition flex items-center space-x-2">
@@ -809,8 +812,11 @@
       audioFiles.set(`${q.verb} ${q.correctNoun}`, `${prefix}-phrase.mp3`);
       audioFiles.set(q.fullSentence, `${prefix}-sentence.mp3`);
     });
+    let voiceRequest = 0;
     function stopVoice() {
+      voiceRequest++;
       voicePlayer.pause();
+      document.getElementById('audio-status').textContent = '點 🔊 播放 Google 美式英文 MP3';
       // iOS may reject seeking before metadata is loaded.
       if (voicePlayer.readyState > 0) {
         try { voicePlayer.currentTime = 0; } catch (_) {}
@@ -820,13 +826,14 @@
       const src = audioFiles.get(text);
       if (!src) return;
       stopVoice();
+      const request = voiceRequest;
       document.getElementById('audio-status').textContent = '正在載入美式英文錄音…';
       voicePlayer.muted = false;
       voicePlayer.volume = 1;
-      voicePlayer.src = new URL(src, document.baseURI).href;
-      voicePlayer.load();
+      voicePlayer.src = new URL(src + '?v=google-us-fb-3', document.baseURI).href;
       const playback = voicePlayer.play();
       if (playback) playback.catch(() => {
+        if (request !== voiceRequest) return;
         document.getElementById('audio-status').textContent = '請點下方播放器的 ▶ 播放；若仍無聲，請確認手機媒體音量。';
       });
     }
